@@ -174,6 +174,13 @@ export default function App() {
             )}
           </div>
         )}
+
+        {/* Versión — inyectada en build time desde package.json */}
+        <footer className="text-center pt-6 pb-10">
+          <span className="text-white/20 text-[10px] font-mono tracking-widest select-none">
+            v{__APP_VERSION__}
+          </span>
+        </footer>
       </div>
     </div>
   )
