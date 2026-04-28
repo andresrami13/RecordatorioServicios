@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm create *)",
+      "Bash(npm install *)",
+      "Bash(node generate-icons.mjs)",
+      "Bash(npm run *)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173)",
+      "Bash(pkill -f \"vite --port 5173\")",
+      "Bash(curl -sL \"https://script.google.com/macros/s/AKfycbx-drBGWaZQ1QYlhebQPcRMcVNU2Fff6lnENf8pwx53JbODvqr4YYXK3qzenmVBHlDzDQ/exec?accion=listar\")",
+      "Bash(curl -sL \"https://script.google.com/macros/s/AKfycbx-drBGWaZQ1QYlhebQPcRMcVNU2Fff6lnENf8pwx53JbODvqr4YYXK3qzenmVBHlDzDQ/exec?accion=listar&t=$\\(date +%s\\)\")"
+    ]
+  }
+}
