@@ -9,20 +9,42 @@ function diaLabel(dia) {
   return ORDINAL[dia] ?? `${dia}`
 }
 
+function diasRestantesLabel(dias) {
+  if (dias < 0) return `Venció hace ${Math.abs(dias)} día${Math.abs(dias) !== 1 ? 's' : ''}`
+  if (dias === 0) return 'Vence hoy'
+  if (dias === 1) return 'Vence mañana'
+  return `Vence en ${dias} días`
+}
+
+function diasColor(dias) {
+  if (dias <= 0) return 'text-red-400'
+  if (dias <= 3) return 'text-amber-400'
+  return 'text-sky-400/60'
+}
+
+function formatValor(valor) {
+  if (!valor && valor !== 0) return null
+  return new Intl.NumberFormat('es-CO', {
+    style: 'currency', currency: 'COP', minimumFractionDigits: 0,
+  }).format(valor)
+}
+
 export default function ReciboCard({ recibo, onPagado }) {
   const [marking, setMarking] = useState(false)
   const [error, setError] = useState(null)
+  const [valor, setValor] = useState('')
 
   const isPaid = recibo.pagado
-  const isActive = recibo.activo
-  const canMark = !isPaid && isActive
+  const canMark = !isPaid && recibo.activo
+  const dias = recibo.diasRestantes
+  const overdue = dias <= 0
 
   async function handleMarcar() {
     setMarking(true)
     setError(null)
     try {
-      await marcarPagado(recibo.id)
-      onPagado(recibo.id)
+      await marcarPagado(recibo.id, valor)
+      onPagado(recibo.id, valor)
     } catch (e) {
       setError('No se pudo marcar. Intenta de nuevo.')
     } finally {
@@ -40,42 +62,55 @@ export default function ReciboCard({ recibo, onPagado }) {
       `}
       style={{ animationDelay: '0ms' }}
     >
-      {/* Glow accent for pending */}
+      {/* Glow accent */}
       {canMark && (
         <div
           className="absolute inset-0 pointer-events-none rounded-2xl"
           style={{
-            boxShadow: 'inset 0 0 40px rgba(124,58,237,0.06)',
-            borderTop: '1px solid rgba(124,58,237,0.25)',
+            boxShadow: overdue
+              ? 'inset 0 0 40px rgba(239,68,68,0.07)'
+              : 'inset 0 0 40px rgba(124,58,237,0.06)',
+            borderTop: overdue
+              ? '1px solid rgba(239,68,68,0.28)'
+              : '1px solid rgba(124,58,237,0.25)',
           }}
         />
       )}
 
       {/* Header row */}
       <div className="flex items-center gap-3">
-        {/* Emoji icon */}
         <div
           className={`
             w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0
             ${isPaid
               ? 'bg-white/5'
-              : 'bg-violet-600/20 shadow-lg shadow-violet-900/30'}
+              : overdue
+                ? 'bg-red-500/20 shadow-lg shadow-red-900/30'
+                : 'bg-violet-600/20 shadow-lg shadow-violet-900/30'}
           `}
         >
           {recibo.emoji}
         </div>
 
-        {/* Name + day */}
         <div className="flex-1 min-w-0">
           <p className={`font-semibold text-base leading-tight truncate ${isPaid ? 'text-white/50' : 'text-white'}`}>
             {recibo.servicio}
           </p>
-          <p className="text-xs text-white/30 mt-0.5">
-            Vence el {diaLabel(recibo.diaInicio)} de cada mes
-          </p>
+          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+            <p className="text-xs text-white/30">
+              Día {diaLabel(recibo.diaInicio)}
+            </p>
+            {!isPaid && dias !== undefined && (
+              <>
+                <span className="text-white/15">·</span>
+                <p className={`text-xs font-medium ${diasColor(dias)}`}>
+                  {diasRestantesLabel(dias)}
+                </p>
+              </>
+            )}
+          </div>
         </div>
 
-        {/* Badge */}
         <div className="flex-shrink-0">
           {isPaid ? (
             <span className="badge-paid flex items-center gap-1">
@@ -85,9 +120,9 @@ export default function ReciboCard({ recibo, onPagado }) {
               PAGADO
             </span>
           ) : (
-            <span className="badge-pending flex items-center gap-1.5">
-              <span className="pulse-dot" />
-              PENDIENTE
+            <span className={`badge-pending flex items-center gap-1.5 ${overdue ? '!bg-red-400/15 !text-red-300 !border-red-400/20' : ''}`}>
+              <span className={`pulse-dot ${overdue ? '!bg-red-400' : ''}`} />
+              {overdue ? 'VENCIDO' : 'PENDIENTE'}
             </span>
           )}
         </div>
@@ -96,6 +131,14 @@ export default function ReciboCard({ recibo, onPagado }) {
       {/* Action area */}
       {canMark && (
         <div className="flex flex-col gap-2">
+          <input
+            type="number"
+            value={valor}
+            onChange={e => setValor(e.target.value)}
+            placeholder="Valor pagado (opcional)"
+            className="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/25 focus:outline-none focus:border-violet-500/50 focus:bg-white/8 transition-all"
+            min="0"
+          />
           <button
             onClick={handleMarcar}
             disabled={marking}
@@ -118,19 +161,24 @@ export default function ReciboCard({ recibo, onPagado }) {
               </>
             )}
           </button>
-          {error && (
-            <p className="text-xs text-red-400 text-center">{error}</p>
-          )}
+          {error && <p className="text-xs text-red-400 text-center">{error}</p>}
         </div>
       )}
 
-      {/* Paid checkmark overlay */}
+      {/* Paid info */}
       {isPaid && (
-        <div className="flex items-center gap-2 text-emerald-400/70">
-          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-          </svg>
-          <span className="text-xs">Pago registrado este mes</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-2 text-emerald-400/70">
+            <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+              <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+            </svg>
+            <span className="text-xs">Pagado este mes</span>
+          </div>
+          {recibo.valor ? (
+            <span className="text-xs font-semibold text-emerald-400/80">
+              {formatValor(recibo.valor)}
+            </span>
+          ) : null}
         </div>
       )}
     </div>

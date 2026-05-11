@@ -66,14 +66,16 @@ export default function App() {
 
   useEffect(() => { cargar() }, [cargar])
 
-  function handlePagado(id) {
+  function handlePagado(id, valor) {
     setRecibos(prev =>
-      prev.map(r => r.id === id ? { ...r, pagado: true } : r)
+      prev.map(r => r.id === id ? { ...r, pagado: true, valor: valor || null } : r)
     )
   }
 
   const activos = recibos.filter(r => r.activo)
-  const pendientes = activos.filter(r => !r.pagado)
+  const pendientes = activos
+    .filter(r => !r.pagado)
+    .sort((a, b) => (a.diasRestantes ?? 0) - (b.diasRestantes ?? 0))
   const pagados = activos.filter(r => r.pagado)
 
   const now = new Date()

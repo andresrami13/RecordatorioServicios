@@ -8,7 +8,14 @@
       "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:5173)",
       "Bash(pkill -f \"vite --port 5173\")",
       "Bash(curl -sL \"https://script.google.com/macros/s/AKfycbx-drBGWaZQ1QYlhebQPcRMcVNU2Fff6lnENf8pwx53JbODvqr4YYXK3qzenmVBHlDzDQ/exec?accion=listar\")",
-      "Bash(curl -sL \"https://script.google.com/macros/s/AKfycbx-drBGWaZQ1QYlhebQPcRMcVNU2Fff6lnENf8pwx53JbODvqr4YYXK3qzenmVBHlDzDQ/exec?accion=listar&t=$\\(date +%s\\)\")"
+      "Bash(curl -sL \"https://script.google.com/macros/s/AKfycbx-drBGWaZQ1QYlhebQPcRMcVNU2Fff6lnENf8pwx53JbODvqr4YYXK3qzenmVBHlDzDQ/exec?accion=listar&t=$\\(date +%s\\)\")",
+      "Bash(git rm *)",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)",
+      "Bash(node -e \"require\\('canvas'\\); console.log\\('canvas OK'\\)\")",
+      "Bash(node -e \"import\\('sharp'\\).then\\(\\(\\)=>console.log\\('sharp OK'\\)\\)\")",
+      "Bash(node -e ' *)"
     ]
   }
 }

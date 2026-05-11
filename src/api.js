@@ -7,8 +7,9 @@ export async function fetchRecibos() {
   return res.json()
 }
 
-export async function marcarPagado(id) {
-  const res = await fetch(`${BASE_URL}?accion=marcar&id=${encodeURIComponent(id)}`)
+export async function marcarPagado(id, valor) {
+  const params = `accion=marcar&id=${encodeURIComponent(id)}&valor=${encodeURIComponent(valor ?? '')}`
+  const res = await fetch(`${BASE_URL}?${params}`)
   if (!res.ok) throw new Error(`Error ${res.status}`)
   return res.json()
 }
